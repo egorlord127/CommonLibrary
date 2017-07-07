@@ -14,4 +14,4 @@ clean:
 	@rm -rf $(PROGRAMS)
 
 check: $(PROGRAMS)
-	./verify3  sign3-res.xml     ca2cert.pem cacert.pem
+	./verify3  sign-res.xml  public.pem
