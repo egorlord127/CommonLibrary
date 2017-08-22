@@ -106,7 +106,6 @@ int base64_decode(const unsigned char *in, unsigned char *out, unsigned int in_l
     }
     return length;
 }
-
 void main()
 {
     char in[] = "abcdefg";
