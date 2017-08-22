@@ -1,7 +1,10 @@
 #include <stdio.h>
+#include <string.h>
 static const char base64_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-int base64_encode(unsigned char* in,  char* out, unsigned int in_len)
+static inline int is_base64(unsigned char c) {
+    return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c == '+') || (c == '/'));
+}
+int base64_encode(const unsigned char* in, unsigned char* out, unsigned int in_len)
 {
     int length = 0;
     int i = 0;
@@ -51,10 +54,66 @@ int base64_encode(unsigned char* in,  char* out, unsigned int in_len)
     return length;
 }
 
+int base64_decode(const unsigned char *in, unsigned char *out, unsigned int in_len) {
+    int i = 0;
+    int j = 0;
+    int in_ = 0;
+    int length = 0;
+    unsigned char char_array_4[4], char_array_3[3];
+
+    while (in_len-- && ( in[in_] != '=') && is_base64(in[in_])) {
+        char_array_4[i++] = in[in_]; in_++;
+        if (i ==4) {
+            for (i = 0; i <4; i++)
+            {
+                char *result = strchr(base64_chars, char_array_4[i]);
+                int position = result - base64_chars;
+                char_array_4[i] = position;
+            }
+
+            char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+            char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+            char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+            for (i = 0; (i < 3); i++)
+            {
+                *out++ = char_array_3[i];
+                length++;
+            }
+            i = 0;
+        }
+    }
+
+    if (i) {
+        for (j = i; j <4; j++)
+            char_array_4[j] = 0;
+
+        for (j = 0; j <4; j++)
+        {
+            char *result = strchr(base64_chars, char_array_4[j]);
+            int position = result - base64_chars;
+            char_array_4[j] = position;
+        }
+        char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+        char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+        char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+        for (j = 0; (j < i - 1); j++) 
+        {
+            *out++ = char_array_3[j];
+            length++;
+        }
+    }
+    return length;
+}
+
 void main()
 {
     char in[] = "abcdefg";
     char out[1024] = "";
+    char decoded[1024] = "";
     int len = base64_encode((unsigned char*)in, out, sizeof(in) - 1);
-    printf("%s:%d", out, len);
+    printf("%s:%d\n", out, len);
+    len = base64_decode(out, decoded, strlen(out));
+    printf("%s:%d\n", decoded, len);
 }
