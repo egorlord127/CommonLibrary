@@ -1,6 +1,7 @@
 PROGRAMS = \
 	main	\
 	base64 	\
+	example 	\
 
 CC	= gcc
 
